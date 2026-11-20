@@ -2,6 +2,7 @@ import { StyleSheet } from "react-native";
 
 export const Colors = {
   background: "#000000",
+  buttonDisabled: "#4d4d50",
   surface: "#121214",
   surfaceInput: "#1C1C1E",
   border: "#2C2C2E",
@@ -88,15 +89,35 @@ export const globalStyles = StyleSheet.create({
     height: StyleSheet.hairlineWidth,
     backgroundColor: Colors.border,
   },
+  label: {
+    fontSize: FontSize.md,
+    color: Colors.textSecondary,
+    fontWeight: FontWeight.medium,
+  },
   input: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: Spacing.sm,
     backgroundColor: Colors.surfaceInput,
-    color: Colors.text,
     borderRadius: Radius.md,
     borderWidth: 1,
     borderColor: Colors.border,
-    paddingHorizontal: Spacing.lg,
-    paddingVertical: Spacing.md,
+    paddingHorizontal: Spacing.md,
+    height: 48,
+  },
+  inputText: {
+    flex: 1,
+    color: Colors.text,
     fontSize: FontSize.md,
+    paddingVertical: 0,
+  },
+  inputIcon: {
+    color: Colors.textSecondary,
+    fontSize: FontSize.lg,
+  },
+  inputCheckbox: {
+    width: 14,
+    height: 14,
   },
   primaryButton: {
     backgroundColor: Colors.primary,
@@ -136,6 +157,7 @@ export const globalStyles = StyleSheet.create({
     transform: [{ scale: 0.98 }],
   },
   btnDisabled: {
+    backgroundColor: Colors.buttonDisabled,
     opacity: 0.4,
   },
   h1: {
@@ -143,6 +165,7 @@ export const globalStyles = StyleSheet.create({
     fontWeight: FontWeight.bold,
     color: Colors.text,
     letterSpacing: -0.5,
+    textTransform: "capitalize",
   },
   h2: {
     fontSize: FontSize.xxl,
