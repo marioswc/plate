@@ -60,6 +60,10 @@ export const globalStyles = StyleSheet.create({
     justifyContent: "center",
     alignItems: "center",
   },
+  colError: {
+    flexDirection: "column",
+    alignItems: "stretch",
+  },
   row: {
     flexDirection: "row",
     alignItems: "center",
@@ -185,6 +189,10 @@ export const globalStyles = StyleSheet.create({
   bodyMuted: {
     fontSize: FontSize.sm,
     color: Colors.textSecondary,
+  },
+  bodyError: {
+    fontSize: FontSize.sm,
+    color: Colors.danger,
   },
   caption: {
     fontSize: FontSize.xs,

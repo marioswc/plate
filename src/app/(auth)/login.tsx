@@ -4,7 +4,8 @@ import { IconButton } from "@/components/IconButton";
 import { PrimaryButton } from "@/components/PrimaryButton";
 import { RefButton } from "@/components/RefButton";
 import { globalStyles, Spacing } from "@/constant/theme";
-import { Checkbox } from "expo-checkbox";
+import { LoginField, loginService } from "@/services/auth/LoginService";
+import { FieldErrors } from "@/services/auth/RegisterService";
 import { useState } from "react";
 import { Text, View } from "react-native";
 
@@ -13,22 +14,55 @@ export default function LoginScreen() {
   const [password, setPassword] = useState<string>("");
   const [loading, setLoading] = useState<boolean>(false);
   const [isSelected, setSelection] = useState<boolean>(false);
+  const [errors, setErrors] = useState<FieldErrors<LoginField>>({});
+
+  const clearErrors = (field: LoginField) => {
+    setErrors((prevErrors) => {
+      if (!prevErrors[field]) return prevErrors;
+      const nextErrors = { ...prevErrors };
+      delete nextErrors[field];
+      return nextErrors;
+    });
+  };
+
+  const handleLoginEmail = async () => {
+    if (loading) return;
+    setLoading(true);
+    setErrors({});
+    try {
+      const res = await loginService({ email, password });
+      if (!res.ok) {
+        setErrors(res.errors);
+        return;
+      }
+    } finally {
+      return setLoading(false);
+    }
+  };
+
   return (
     <AuthWrapper
       title="Back to the grind"
       subtitle="Pick up right where you left off"
     >
-      <View style={{ marginBottom: Spacing.xl, gap: Spacing.xl }}>
+      <View style={{ marginBottom: Spacing.xl, gap: Spacing.md }}>
         <View style={{ gap: Spacing.sm }}>
           <Text style={globalStyles.label}>Email:</Text>
           <AuthInput
             icon="mail"
             placeholder="you@example.com"
             value={email}
-            onChangeText={setEmail}
             keyboardType="email-address"
+            onChangeText={(text) => {
+              setEmail(text);
+              clearErrors("email");
+            }}
           />
         </View>
+        {errors.email ? (
+          <Text style={globalStyles.bodyError}>{errors.email}</Text>
+        ) : null}
+
         <View style={{ gap: Spacing.sm }}>
           <Text style={globalStyles.label}>Password:</Text>
           <AuthInput
@@ -39,29 +73,28 @@ export default function LoginScreen() {
             secureTextEntry
           />
         </View>
+        {errors.password ? (
+          <Text style={globalStyles.bodyError}>{errors.password}</Text>
+        ) : null}
       </View>
       <View
         style={[
-          globalStyles.rowBetween,
-          { paddingHorizontal: Spacing.xs, marginBottom: Spacing.xl },
+          globalStyles.row,
+          {
+            justifyContent: "flex-end",
+            paddingHorizontal: Spacing.xs,
+            marginBottom: Spacing.xl,
+          },
         ]}
       >
-        <View style={[globalStyles.row, { gap: Spacing.sm }]}>
-          <Checkbox
-            style={globalStyles.inputCheckbox}
-            value={isSelected}
-            onValueChange={setSelection}
-          />
-          <Text style={[globalStyles.bodyMuted]}>Remember me</Text>
-        </View>
         <RefButton
           route={"/register"}
-          buttonText="Forgot password"
+          buttonText="Forgot password?"
           loading={loading}
         />
       </View>
       <PrimaryButton
-        handlePress={() => alert("Hello from sign in")}
+        handlePress={handleLoginEmail}
         buttonText="Sign In"
         loading={loading}
       />

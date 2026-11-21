@@ -6,7 +6,7 @@ export default function HomeLayout() {
     <Stack
       screenOptions={{
         headerShown: false,
-        animation: "fade",
+        animation: "fade_from_bottom",
         contentStyle: { backgroundColor: Colors.background },
       }}
     />
