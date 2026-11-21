@@ -22,27 +22,25 @@ export default function AuthProvider(_children: Props) {
   const [session, setSession] = useState<Session | null>(null);
 
   useEffect(() => {
-    // fetch the current session on component mount
     async function fetchSession() {
       const { error, data } = await supabase.auth.getSession();
       if (error) {
         console.error("Error fetching session:", error.message);
-        throw error; // throw the error to be caught by the outer try-catch
+        setLoading(false);
+        return;
       }
       if (data.session) {
-        // if session exists, set it
         setSession(data.session);
       } else {
-        // if no session, redirect to login
         router.replace("/login");
       }
       setLoading(false);
     }
     fetchSession();
-    // listen for auth state changes
+
     const {
       data: { subscription },
-    } = supabase.auth.onAuthStateChange(async (_, session) => {
+    } = supabase.auth.onAuthStateChange((_, session) => {
       setSession(session);
       setLoading(false);
       if (!session) {
@@ -53,6 +51,7 @@ export default function AuthProvider(_children: Props) {
     });
     return () => subscription.unsubscribe();
   }, []);
+
   return (
     <AuthContext.Provider value={{ loading, session }}>
       {_children.children}

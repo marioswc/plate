@@ -4,6 +4,7 @@ import { IconButton } from "@/components/IconButton";
 import { PrimaryButton } from "@/components/PrimaryButton";
 import { RefButton } from "@/components/RefButton";
 import { globalStyles, Spacing } from "@/constant/theme";
+import { googleAuthService } from "@/services/auth/GoogleService";
 import {
   FieldErrors,
   RegisterField,
@@ -46,6 +47,21 @@ export default function RegisterScreen() {
       if (!res.ok) {
         setErrors(res.errors);
         return;
+      }
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleGoogleAuth = async () => {
+    if (loading) return;
+    setLoading(true);
+    Keyboard.dismiss();
+    setErrors({});
+    try {
+      const res = await googleAuthService();
+      if (!res.ok && !res.cancelled) {
+        setErrors(res.errors);
       }
     } finally {
       setLoading(false);
@@ -166,6 +182,11 @@ export default function RegisterScreen() {
           <Text style={globalStyles.bodyError}>{errors.confirmPassword}</Text>
         ) : null}
       </View>
+      {errors.form ? (
+        <Text style={[globalStyles.bodyError, { marginBottom: Spacing.md }]}>
+          {errors.form}
+        </Text>
+      ) : null}
       <PrimaryButton
         handlePress={handleRegisterEmail}
         buttonText="Sign Up"
@@ -202,7 +223,8 @@ export default function RegisterScreen() {
       <View style={[globalStyles.center]}>
         <IconButton
           iconName="logo-google"
-          handlePress={() => alert("hola chat")}
+          handlePress={handleGoogleAuth}
+          loading={loading}
         />
       </View>
     </AuthWrapper>

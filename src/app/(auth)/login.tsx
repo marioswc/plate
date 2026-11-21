@@ -4,6 +4,7 @@ import { IconButton } from "@/components/IconButton";
 import { PrimaryButton } from "@/components/PrimaryButton";
 import { RefButton } from "@/components/RefButton";
 import { globalStyles, Spacing } from "@/constant/theme";
+import { googleAuthService } from "@/services/auth/GoogleService";
 import { LoginField, loginService } from "@/services/auth/LoginService";
 import { FieldErrors } from "@/services/auth/RegisterService";
 import { useState } from "react";
@@ -37,6 +38,20 @@ export default function LoginScreen() {
       }
     } finally {
       return setLoading(false);
+    }
+  };
+
+  const handleGoogleAuth = async () => {
+    if (loading) return;
+    setLoading(true);
+    setErrors({});
+    try {
+      const res = await googleAuthService();
+      if (!res.ok && !res.cancelled) {
+        setErrors(res.errors);
+      }
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -93,6 +108,11 @@ export default function LoginScreen() {
           loading={loading}
         />
       </View>
+      {errors.form ? (
+        <Text style={[globalStyles.bodyError, { marginBottom: Spacing.md }]}>
+          {errors.form}
+        </Text>
+      ) : null}
       <PrimaryButton
         handlePress={handleLoginEmail}
         buttonText="Sign In"
@@ -129,7 +149,8 @@ export default function LoginScreen() {
       <View style={[globalStyles.center]}>
         <IconButton
           iconName="logo-google"
-          handlePress={() => alert("hola chat")}
+          handlePress={handleGoogleAuth}
+          loading={loading}
         />
       </View>
     </AuthWrapper>
