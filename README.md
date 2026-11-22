@@ -10,6 +10,15 @@ Cross-platform workout tracker and fitness social app inspired by Hevy. Plate is
 - **[React Native](https://reactnative.dev/)**
 - **[TypeScript](https://www.typescriptlang.org/)**
 - **[Expo Router](https://docs.expo.dev/router/introduction/)**
+- **[Supabase](https://supabase.com/)** (Auth & PostgreSQL)
+
+## Database Schema
+
+Plate uses PostgreSQL on Supabase with Row Level Security (RLS) enabled across all tables.
+
+![Plate Database Schema](./docs/images/schema-db.svg)
+
+For full details on tables, constraints, indexes, triggers, and RLS policies, see [docs/schema-db.md](./docs/schema-db.md).
 
 ## Getting Started
 
