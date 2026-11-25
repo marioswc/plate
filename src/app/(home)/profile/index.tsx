@@ -10,7 +10,8 @@ import { useUserProfile } from "@/hooks/profile/useUserProfile";
 import { useAuth } from "@/provider/AuthProvider";
 import Ionicons from "@expo/vector-icons/Ionicons";
 import { Image } from "expo-image";
-import { Href, router } from "expo-router";
+import { Href, router, useFocusEffect } from "expo-router";
+import { useCallback, useRef } from "react";
 import {
   ActivityIndicator,
   Pressable,
@@ -21,10 +22,21 @@ import {
 
 export default function ProfileScreen() {
   const { session } = useAuth();
-  const { profile, loading, error } = useUserProfile(session?.user.id);
+  const { profile, loading, error, refetch } = useUserProfile(session?.user.id);
+  const isFirstFocus = useRef(true);
   const noProfilePicture = require("@/assets/images/no-profile-picture.jpeg");
 
-  if (loading) {
+  useFocusEffect(
+    useCallback(() => {
+      if (isFirstFocus.current) {
+        isFirstFocus.current = false;
+        return;
+      }
+      refetch();
+    }, [refetch]),
+  );
+
+  if (loading && !profile) {
     return (
       <View style={[globalStyles.screen, globalStyles.center]}>
         <ActivityIndicator color={Colors.primary} />

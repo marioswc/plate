@@ -5,21 +5,25 @@ type PrimaryButtonProps = {
   handlePress: () => void;
   buttonText: string;
   loading?: boolean;
+  disabled?: boolean;
 };
 
 export function PrimaryButton({
   handlePress,
   buttonText,
   loading = false,
+  disabled = false,
 }: PrimaryButtonProps) {
+  const isDisabled = loading || disabled;
+
   return (
     <Pressable
       onPress={handlePress}
-      disabled={loading}
+      disabled={isDisabled}
       style={({ pressed }) => [
         globalStyles.primaryButton,
-        pressed && !loading && globalStyles.btnPressed,
-        loading && globalStyles.btnDisabled,
+        pressed && !isDisabled && globalStyles.btnPressed,
+        isDisabled && globalStyles.btnDisabled,
       ]}
     >
       {loading ? (
