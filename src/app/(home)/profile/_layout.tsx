@@ -5,6 +5,7 @@ export default function ProfileLayout() {
   return (
     <Stack
       screenOptions={{
+        headerBackButtonDisplayMode: "minimal",
         headerStyle: { backgroundColor: Colors.background },
         headerTintColor: Colors.text,
         headerShadowVisible: false,
@@ -12,6 +13,7 @@ export default function ProfileLayout() {
       }}
     >
       <Stack.Screen name="index" options={{ headerShown: false }} />
+      <Stack.Screen name="edit" options={{ title: "Edit profile" }} />
     </Stack>
   );
 }
