@@ -10,7 +10,12 @@ Cross-platform workout tracker and fitness social app inspired by Hevy. Plate is
 - **[React Native](https://reactnative.dev/)**
 - **[TypeScript](https://www.typescriptlang.org/)**
 - **[Expo Router](https://docs.expo.dev/router/introduction/)**
-- **[Supabase](https://supabase.com/)** (Auth & PostgreSQL)
+- **[Supabase](https://supabase.com/)** (Auth, PostgreSQL & Storage)
+- **[MuscleLib API](https://github.com/MuscleLib)** (Exercise catalog)
+
+## Exercises API
+
+Exercise data, filters, and media are powered by **[MuscleLib](https://github.com/MuscleLib)** ([API Docs](https://musclelib-docs.vercel.app/en/docs)).
 
 ## Database Schema
 
