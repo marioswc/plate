@@ -27,6 +27,14 @@
           "image": "./assets/icon.png",
           "imageWidth": 120
         }
+      ],
+      [
+        "expo-image-picker",
+        {
+          "photosPermission": "Allow Plate to access your photos to update your profile picture.",
+          "cameraPermission": false,
+          "microphonePermission": false
+        }
       ]
     ],
     "experiments": {

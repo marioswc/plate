@@ -1,22 +1,37 @@
 import { FormInput } from "@/components/FormInput";
 import { PrimaryButton } from "@/components/PrimaryButton";
-import { Colors, globalStyles, Radius, Spacing } from "@/constant/theme";
+import {
+  Colors,
+  FontSize,
+  FontWeight,
+  globalStyles,
+  Radius,
+  Spacing,
+} from "@/constant/theme";
 import { useUserProfile } from "@/hooks/profile/useUserProfile";
 import { useAuth } from "@/provider/AuthProvider";
 import { FieldErrors } from "@/services/auth/RegisterService";
+import {
+  AvatarUploadInput,
+  validateAvatar,
+} from "@/services/profile/AvatarService";
 import {
   BIO_MAX_LENGTH,
   UpdateProfileField,
   updateProfileService,
 } from "@/services/profile/UpdateProfileService";
+import { Ionicons } from "@expo/vector-icons";
 import { Image } from "expo-image";
+import * as ImagePicker from "expo-image-picker";
 import { router } from "expo-router";
 import { useEffect, useState } from "react";
 import {
   ActivityIndicator,
+  Alert,
   Keyboard,
   KeyboardAvoidingView,
   Platform,
+  Pressable,
   ScrollView,
   StyleSheet,
   Text,
@@ -32,6 +47,9 @@ export default function EditProfileScreen() {
   const [fullName, setFullName] = useState("");
   const [username, setUsername] = useState("");
   const [bio, setBio] = useState("");
+  const [pendingAvatar, setPendingAvatar] = useState<AvatarUploadInput | null>(
+    null,
+  );
   const [saving, setSaving] = useState(false);
   const [errors, setErrors] = useState<FieldErrors<UpdateProfileField>>({});
 
@@ -51,11 +69,50 @@ export default function EditProfileScreen() {
     });
   };
 
+  const handlePickAvatar = async () => {
+    if (saving) return;
+
+    const permission = await ImagePicker.requestMediaLibraryPermissionsAsync();
+    if (!permission.granted) {
+      Alert.alert(
+        "Permission required",
+        "Please allow photo library access to update your profile picture.",
+      );
+      return;
+    }
+
+    const result = await ImagePicker.launchImageLibraryAsync({
+      mediaTypes: ["images"],
+      allowsEditing: true,
+      aspect: [1, 1],
+      quality: 0.8,
+    });
+
+    if (result.canceled || !result.assets[0]) return;
+
+    const asset = result.assets[0];
+    const nextAvatar: AvatarUploadInput = {
+      uri: asset.uri,
+      mimeType: asset.mimeType,
+      fileSize: asset.fileSize,
+    };
+
+    const avatarError = validateAvatar(nextAvatar);
+    if (avatarError) {
+      setErrors((prev) => ({ ...prev, avatar: avatarError }));
+      return;
+    }
+
+    setPendingAvatar(nextAvatar);
+    clearError("avatar");
+  };
+
   const hasChanges =
     !!profile &&
     (fullName.trim() !== (profile.full_name ?? "") ||
       username.trim().toLowerCase() !== (profile.username ?? "") ||
-      bio.trim() !== (profile.bio ?? ""));
+      bio.trim() !== (profile.bio ?? "") ||
+      pendingAvatar !== null);
 
   const handleSave = async () => {
     if (!userUid || saving || !hasChanges) return;
@@ -69,6 +126,7 @@ export default function EditProfileScreen() {
         full_name: fullName,
         username,
         bio,
+        avatar: pendingAvatar,
       });
 
       if (!res.ok) {
@@ -111,15 +169,41 @@ export default function EditProfileScreen() {
         showsVerticalScrollIndicator={false}
       >
         <View style={styles.avatarSection}>
-          <Image
-            source={
-              profile.avatar_url
-                ? { uri: profile.avatar_url }
-                : noProfilePicture
-            }
-            style={styles.avatar}
-            contentFit="cover"
-          />
+          <Pressable
+            onPress={handlePickAvatar}
+            disabled={saving}
+            style={({ pressed }) => [
+              styles.avatarPressable,
+              pressed && globalStyles.btnPressed,
+            ]}
+          >
+            <View style={styles.avatarWrapper}>
+              <Image
+                source={
+                  pendingAvatar
+                    ? { uri: pendingAvatar.uri }
+                    : profile.avatar_url
+                      ? { uri: profile.avatar_url }
+                      : noProfilePicture
+                }
+                style={styles.avatar}
+                contentFit="cover"
+              />
+              <View style={styles.avatarBadge}>
+                <Ionicons
+                  name="camera-outline"
+                  size={16}
+                  color={Colors.text}
+                />
+              </View>
+            </View>
+            <Text style={styles.changePhotoText}>Change photo</Text>
+          </Pressable>
+          {errors.avatar ? (
+            <Text style={[globalStyles.bodyError, styles.avatarError]}>
+              {errors.avatar}
+            </Text>
+          ) : null}
         </View>
 
         <View style={styles.form}>
@@ -196,10 +280,39 @@ const styles = StyleSheet.create({
     alignItems: "center",
     marginBottom: Spacing.xxl,
   },
+  avatarPressable: {
+    alignItems: "center",
+    gap: Spacing.sm,
+  },
+  avatarWrapper: {
+    position: "relative",
+  },
   avatar: {
     width: 96,
     height: 96,
     borderRadius: Radius.full,
+  },
+  avatarBadge: {
+    position: "absolute",
+    right: 0,
+    bottom: 0,
+    width: 30,
+    height: 30,
+    borderRadius: Radius.full,
+    backgroundColor: Colors.surface,
+    borderWidth: 1,
+    borderColor: Colors.border,
+    alignItems: "center",
+    justifyContent: "center",
+  },
+  changePhotoText: {
+    color: Colors.text,
+    fontSize: FontSize.sm,
+    fontWeight: FontWeight.semibold,
+  },
+  avatarError: {
+    marginTop: Spacing.xs,
+    textAlign: "center",
   },
   form: {
     gap: Spacing.lg,

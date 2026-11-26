@@ -1,5 +1,10 @@
 import { supabase } from "@/lib/supabase";
 import { FieldErrors } from "@/services/auth/RegisterService";
+import {
+  AvatarUploadInput,
+  uploadAvatarService,
+  validateAvatar,
+} from "@/services/profile/AvatarService";
 
 const USERNAME_REGEX = /^[a-zA-Z0-9._]{3,20}$/;
 export const BIO_MAX_LENGTH = 160;
@@ -8,9 +13,15 @@ export interface UpdateProfileInput {
   full_name: string;
   username: string;
   bio: string;
+  avatar?: AvatarUploadInput | null;
 }
 
-export type UpdateProfileField = "full_name" | "username" | "bio" | "form";
+export type UpdateProfileField =
+  | "full_name"
+  | "username"
+  | "bio"
+  | "avatar"
+  | "form";
 
 export type UpdateProfileResult =
   | {
@@ -49,6 +60,13 @@ export function validateUpdateProfile(
     errors.bio = `Bio must be ${BIO_MAX_LENGTH} characters or less`;
   }
 
+  if (input.avatar) {
+    const avatarError = validateAvatar(input.avatar);
+    if (avatarError) {
+      errors.avatar = avatarError;
+    }
+  }
+
   return errors;
 }
 
@@ -78,13 +96,36 @@ export async function updateProfileService(
   const username = input.username.trim().toLowerCase();
   const bio = input.bio.trim();
 
+  let avatarUrl: string | undefined;
+  if (input.avatar) {
+    const uploadResult = await uploadAvatarService(userUid, input.avatar);
+    if (!uploadResult.ok) {
+      return {
+        ok: false,
+        errors: { avatar: uploadResult.error },
+      };
+    }
+    avatarUrl = uploadResult.publicUrl;
+  }
+
+  const updatePayload: {
+    full_name: string;
+    username: string;
+    bio: string | null;
+    avatar_url?: string;
+  } = {
+    full_name: fullName,
+    username,
+    bio: bio || null,
+  };
+
+  if (avatarUrl) {
+    updatePayload.avatar_url = avatarUrl;
+  }
+
   const { data, error } = await supabase
     .from("users")
-    .update({
-      full_name: fullName,
-      username,
-      bio: bio || null,
-    })
+    .update(updatePayload)
     .eq("user_uid", userUid)
     .select("username, full_name, bio, avatar_url")
     .single();
