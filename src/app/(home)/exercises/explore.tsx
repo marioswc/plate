@@ -15,39 +15,30 @@ import {
   globalStyles,
   Spacing,
 } from "@/constant/theme";
+import { useExercises } from "@/hooks/exercises/useExercises";
+import { getExerciseImageUrl } from "@/services/exercises/ExerciseService";
 import { useState } from "react";
-import { ScrollView, StyleSheet, Text, View } from "react-native";
-
-// Datos de ejemplo solo para ver el diseño (luego vendrán del fetch)
-const MOCK_EXERCISES = [
-  {
-    id: "1",
-    name: "3/4 Sit-Up",
-    muscle: "Abdominals",
-    level: "Beginner",
-    force: "Pull",
-  },
-  {
-    id: "2",
-    name: "Barbell Bench Press",
-    muscle: "Chest",
-    level: "Intermediate",
-    force: "Push",
-  },
-  {
-    id: "3",
-    name: "Stiff-Legged Barbell Deadlift",
-    muscle: "Hamstrings",
-    level: "Expert",
-    force: "Pull",
-  },
-];
+import {
+  ActivityIndicator,
+  FlatList,
+  Pressable,
+  StyleSheet,
+  Text,
+  View,
+} from "react-native";
 
 export default function ExploreRoutinesScreen() {
   const [openFilter, setOpenFilter] = useState<FilterType | null>(null);
   const [selectedLevel, setSelectedLevel] = useState<string | null>(null);
   const [selectedMuscle, setSelectedMuscle] = useState<string | null>(null);
   const [selectedForce, setSelectedForce] = useState<string | null>(null);
+
+  const { exercises, loading, loadingMore, hasMore, error, loadMore } =
+    useExercises({
+      level: selectedLevel,
+      primaryMuscles: selectedMuscle,
+      force: selectedForce,
+    });
 
   const modalConfig = {
     level: { title: "Level", options: LEVEL_OPTIONS, value: selectedLevel },
@@ -94,20 +85,56 @@ export default function ExploreRoutinesScreen() {
         />
       </View>
 
-      <ScrollView
-        showsVerticalScrollIndicator={false}
-        contentContainerStyle={styles.listContent}
-      >
-        {MOCK_EXERCISES.map((exercise) => (
-          <ExerciseCard
-            key={exercise.id}
-            name={exercise.name}
-            muscle={exercise.muscle}
-            level={exercise.level}
-            force={exercise.force}
-          />
-        ))}
-      </ScrollView>
+      {loading ? (
+        <View style={[globalStyles.flex1, globalStyles.center]}>
+          <ActivityIndicator color={Colors.primary} />
+        </View>
+      ) : error ? (
+        <View style={[globalStyles.flex1, globalStyles.center]}>
+          <Text style={globalStyles.bodyError}>{error}</Text>
+        </View>
+      ) : exercises.length === 0 ? (
+        <View style={[globalStyles.flex1, globalStyles.center]}>
+          <Text style={globalStyles.bodyMuted}>No exercises found</Text>
+        </View>
+      ) : (
+        <FlatList
+          data={exercises}
+          keyExtractor={(item, index) => `${item._id || item.id}-${index}`}
+          showsVerticalScrollIndicator={false}
+          contentContainerStyle={styles.listContent}
+          renderItem={({ item }) => (
+            <ExerciseCard
+              name={item.name}
+              muscle={item.primaryMuscles?.[0] ?? "General"}
+              level={item.level}
+              force={item.force}
+              imageUrl={item.id ? getExerciseImageUrl(item.id) : null}
+            />
+          )}
+          ListFooterComponent={
+            hasMore ? (
+              <Pressable
+                onPress={loadMore}
+                disabled={loadingMore}
+                style={({ pressed }) => [
+                  globalStyles.secondaryButton,
+                  styles.loadMoreButton,
+                  pressed && globalStyles.btnPressed,
+                ]}
+              >
+                {loadingMore ? (
+                  <ActivityIndicator size="small" color={Colors.primary} />
+                ) : (
+                  <Text style={globalStyles.secondaryButtonText}>
+                    Load more
+                  </Text>
+                )}
+              </Pressable>
+            ) : undefined
+          }
+        />
+      )}
 
       <FilterSheet
         visible={currentModal !== null}
@@ -138,5 +165,8 @@ const styles = StyleSheet.create({
   listContent: {
     gap: Spacing.sm,
     paddingBottom: Spacing.xxl,
+  },
+  loadMoreButton: {
+    marginTop: Spacing.sm,
   },
 });

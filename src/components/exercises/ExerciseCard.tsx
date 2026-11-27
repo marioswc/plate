@@ -7,13 +7,16 @@ import {
   Spacing,
 } from "@/constant/theme";
 import Ionicons from "@expo/vector-icons/Ionicons";
+import { Image } from "expo-image";
+import { useState } from "react";
 import { Pressable, StyleSheet, Text, View } from "react-native";
 
 interface ExerciseCardProps {
   name: string;
   muscle: string;
-  level: string;
-  force: string;
+  level?: string | null;
+  force?: string | null;
+  imageUrl?: string | null;
   onPress?: () => void;
 }
 
@@ -22,34 +25,52 @@ export function ExerciseCard({
   muscle,
   level,
   force,
+  imageUrl,
   onPress,
 }: ExerciseCardProps) {
+  const [imageError, setImageError] = useState(false);
+
   return (
     <Pressable
       onPress={onPress}
       style={({ pressed }) => [styles.card, pressed && globalStyles.btnPressed]}
     >
       <View style={styles.thumbnail}>
-        <Ionicons
-          name="barbell-outline"
-          size={22}
-          color={Colors.textSecondary}
-        />
+        {imageUrl && !imageError ? (
+          <Image
+            source={{ uri: imageUrl }}
+            style={styles.thumbnailImage}
+            contentFit="cover"
+            onError={() => setImageError(true)}
+          />
+        ) : (
+          <Ionicons
+            name="barbell-outline"
+            size={22}
+            color={Colors.textSecondary}
+          />
+        )}
       </View>
 
       <View style={styles.info}>
         <Text style={styles.name} numberOfLines={1}>
           {name}
         </Text>
-        <Text style={styles.muscle}>{muscle}</Text>
+        <Text style={styles.muscle} numberOfLines={1}>
+          {muscle}
+        </Text>
 
         <View style={styles.badgesRow}>
-          <View style={styles.badge}>
-            <Text style={styles.badgeText}>{level}</Text>
-          </View>
-          <View style={styles.badge}>
-            <Text style={styles.badgeText}>{force}</Text>
-          </View>
+          {level ? (
+            <View style={styles.badge}>
+              <Text style={styles.badgeText}>{level}</Text>
+            </View>
+          ) : null}
+          {force ? (
+            <View style={styles.badge}>
+              <Text style={styles.badgeText}>{force}</Text>
+            </View>
+          ) : null}
         </View>
       </View>
 
@@ -78,6 +99,11 @@ const styles = StyleSheet.create({
     borderColor: Colors.border,
     alignItems: "center",
     justifyContent: "center",
+    overflow: "hidden",
+  },
+  thumbnailImage: {
+    width: "100%",
+    height: "100%",
   },
   info: {
     flex: 1,
@@ -91,6 +117,7 @@ const styles = StyleSheet.create({
   muscle: {
     fontSize: FontSize.sm,
     color: Colors.textSecondary,
+    textTransform: "capitalize",
   },
   badgesRow: {
     flexDirection: "row",
@@ -107,5 +134,6 @@ const styles = StyleSheet.create({
     fontSize: FontSize.xs,
     color: Colors.textSecondary,
     fontWeight: FontWeight.medium,
+    textTransform: "capitalize",
   },
 });
