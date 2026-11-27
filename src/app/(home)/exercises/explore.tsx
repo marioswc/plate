@@ -17,6 +17,7 @@ import {
 } from "@/constant/theme";
 import { useExercises } from "@/hooks/exercises/useExercises";
 import { getExerciseImageUrl } from "@/services/exercises/ExerciseService";
+import { Href, router } from "expo-router";
 import { useState } from "react";
 import {
   ActivityIndicator,
@@ -110,6 +111,12 @@ export default function ExploreRoutinesScreen() {
               level={item.level}
               force={item.force}
               imageUrl={item.id ? getExerciseImageUrl(item.id) : null}
+              onPress={() =>
+                router.push({
+                  pathname: "/exercises/[id]",
+                  params: { id: item.id },
+                } as Href)
+              }
             />
           )}
           ListFooterComponent={
