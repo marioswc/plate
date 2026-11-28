@@ -7,7 +7,10 @@ import {
   Spacing,
 } from "@/constant/theme";
 import { useExerciseDetail } from "@/hooks/exercises/useExerciseDetail";
+import { useSavedExercise } from "@/hooks/exercises/useSavedExercise";
+import { useAuth } from "@/provider/AuthProvider";
 import { getExerciseImageUrl } from "@/services/exercises/ExerciseService";
+import Ionicons from "@expo/vector-icons/Ionicons";
 import { Image } from "expo-image";
 import { useLocalSearchParams } from "expo-router";
 import { useState } from "react";
@@ -15,6 +18,7 @@ import {
   ActivityIndicator,
   NativeScrollEvent,
   NativeSyntheticEvent,
+  Pressable,
   ScrollView,
   StyleSheet,
   Text,
@@ -24,7 +28,12 @@ import {
 
 export default function ExerciseDetailScreen() {
   const { id } = useLocalSearchParams<{ id: string }>();
+  const { session } = useAuth();
   const { exercise, loading, error } = useExerciseDetail(id);
+  const { saved, saving, toggleSave } = useSavedExercise(
+    session?.user.id,
+    exercise,
+  );
   const { width } = useWindowDimensions();
   const [activeImage, setActiveImage] = useState(0);
 
@@ -107,9 +116,43 @@ export default function ExerciseDetailScreen() {
         </View>
       </View>
 
-      {/* Nombre y etiquetas */}
+      {/* Nombre, botón guardar y etiquetas */}
       <View style={styles.section}>
-        <Text style={globalStyles.h2}>{exercise.name}</Text>
+        <View style={styles.titleRow}>
+          <Text style={[globalStyles.h2, styles.title]}>{exercise.name}</Text>
+
+          <Pressable
+            onPress={toggleSave}
+            disabled={saving}
+            hitSlop={8}
+            style={({ pressed }) => [
+              styles.saveButton,
+              saved && styles.saveButtonActive,
+              pressed && globalStyles.btnPressed,
+            ]}
+          >
+            {saving ? (
+              <ActivityIndicator
+                size="small"
+                color={saved ? Colors.onPrimary : Colors.text}
+              />
+            ) : (
+              <Ionicons
+                name={saved ? "bookmark" : "bookmark-outline"}
+                size={18}
+                color={saved ? Colors.onPrimary : Colors.text}
+              />
+            )}
+            <Text
+              style={[
+                styles.saveButtonText,
+                saved && styles.saveButtonTextActive,
+              ]}
+            >
+              {saved ? "Saved" : "Save"}
+            </Text>
+          </Pressable>
+        </View>
 
         {badges.length > 0 ? (
           <View style={styles.badgesRow}>
@@ -213,6 +256,39 @@ const styles = StyleSheet.create({
   },
   section: {
     gap: Spacing.sm,
+  },
+  titleRow: {
+    flexDirection: "row",
+    alignItems: "flex-start",
+    justifyContent: "space-between",
+    gap: Spacing.md,
+  },
+  title: {
+    flex: 1,
+  },
+  saveButton: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: Spacing.xs,
+    backgroundColor: Colors.surface,
+    borderWidth: 1,
+    borderColor: Colors.border,
+    borderRadius: Radius.full,
+    paddingVertical: Spacing.xs + 2,
+    paddingHorizontal: Spacing.md,
+    marginTop: 2,
+  },
+  saveButtonActive: {
+    backgroundColor: Colors.primary,
+    borderColor: Colors.primary,
+  },
+  saveButtonText: {
+    fontSize: FontSize.sm,
+    fontWeight: FontWeight.medium,
+    color: Colors.text,
+  },
+  saveButtonTextActive: {
+    color: Colors.onPrimary,
   },
   badgesRow: {
     flexDirection: "row",

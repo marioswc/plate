@@ -47,7 +47,7 @@ export default function ExercisesScreen() {
           ]}
         >
           <Ionicons name="search-outline" size={24} color={Colors.text} />
-          <Text style={globalStyles.secondaryButtonText}>Explore</Text>
+          <Text style={globalStyles.secondaryButtonText}>Explore routines</Text>
         </Pressable>
       </View>
     </View>
