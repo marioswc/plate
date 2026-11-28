@@ -20,10 +20,11 @@ Exercise data, filters, and media are powered by **[MuscleLib](https://github.co
 ## Database Schema
 
 Plate uses PostgreSQL on Supabase with Row Level Security (RLS) enabled across all tables.
+The schema covers users, posts, post likes, saved exercises, follows, routines, routine exercises, and post comments.
 
 ![Plate Database Schema](./docs/images/schema-db.svg)
 
-For full details on tables, constraints, indexes, triggers, and RLS policies, see [docs/schema-db.md](./docs/schema-db.md).
+For table columns, constraints, and RLS policies, see [docs/schema-db.md](./docs/schema-db.md).
 
 ## Getting Started
 
@@ -45,7 +46,9 @@ For full details on tables, constraints, indexes, triggers, and RLS policies, se
 3. **Start the development server**
 
    ```bash
-   npx expo start
+   pnpm start
    ```
+
+   *(Or with npm: `npx expo start`)*
 
    From the terminal, you can open the app in the **iOS Simulator**, **Android Emulator**, **Expo Go**, or a **Development Build**.
